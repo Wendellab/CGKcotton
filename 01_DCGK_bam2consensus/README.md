@@ -45,7 +45,7 @@ seqkit mutate -w0 Grotundifolium_genome_HAU_v1.0.fasta | grep -A1 '>Chr' | cut -
 seqkit mutate -w0 GWHBISS00000000.genome.fasta | \
 awk '/^>/ {
     match($0,/Chromosome ([0-9]+)/,a)
-    printf(">Ch%02d\n",a[1])
+    printf(">Chr%02d\n",a[1])
     next
 } {print}' > D5_T2T_PKUreference.fa
 ```
@@ -107,7 +107,8 @@ liftoff $Dir/G1_HAUreference.fasta $Dir/D5_T2T_PKUreference.fa -g ./D5_T2T_PKUre
 liftoff $Dir/G2_CRIreference.fasta $Dir/D5_T2T_PKUreference.fa -g ./D5_T2T_PKUreference_renamed.gff3 -o G2_liftoff -p 30 -polish -exclude_partial
 liftoff $Dir/K2_HAUreference.fasta $Dir/D5_T2T_PKUreference.fa -g ./D5_T2T_PKUreference_renamed.gff3 -o K2_liftoff -p 30 -polish -exclude_partial
 ```
-Convery gff3 into bed file, in here, however, we kept the strand information `+` or `-` for later `bam2consensus` fasta extraction
+
+Extract peptide sequences use gffread, but remove genes with introns largers than 200 `-i 200`, minimal length of transcript `-l 200` and merge extract transcripts `-M`; A side note, the `fa` peptide files can only contain partial of bed files. Fix the problematic site `.` to `X` in `gffread` output.
 ```
 cd /lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/00_ref_GCF_0256985451/04_liftoff_genespace
 
@@ -115,6 +116,23 @@ mkdir ../05_genespace/bed
 mkdir ../05_genespace/peptide
 mkdir ../05_genespace/strandbed
 
+/lustre/hdd/LAS/jfw-lab/weixuan/00_BioinformaticTools/gffread/gffread D5_T2T_PKUreference_renamed.gff3 -i 200 -l 200  -M -g ../D5_T2T_PKUreference.fa -y ../05_genespace/peptide/D5_T2T_PKUreference.fa --keep-genes
+/lustre/hdd/LAS/jfw-lab/weixuan/00_BioinformaticTools/gffread/gffread C1_liftoff_polished -i 200 -l 200  -M -g ../C1_HAUreference.fasta -y ../05_genespace/peptide/C1_HAUreference.fa --keep-genes
+/lustre/hdd/LAS/jfw-lab/weixuan/00_BioinformaticTools/gffread/gffread G1_liftoff_polished -i 200 -l 200  -M -g ../G1_HAUreference.fasta -y ../05_genespace/peptide/G1_HAUreference.fa --keep-genes
+/lustre/hdd/LAS/jfw-lab/weixuan/00_BioinformaticTools/gffread/gffread G2_liftoff_polished -i 200 -l 200  -M -g ../G2_CRIreference.fasta -y ../05_genespace/peptide/G2_CRIreference.fa --keep-genes
+/lustre/hdd/LAS/jfw-lab/weixuan/00_BioinformaticTools/gffread/gffread K2_liftoff_polished -i 200 -l 200  -M -g ../K2_HAUreference.fasta -y ../05_genespace/peptide/K2_HAUreference.fa --keep-genes
+
+cd ../05_genespace/peptide
+
+sed -i '/^>/!s/\./X/g' C1_HAUreference.fa
+sed -i '/^>/!s/\./X/g' G1_HAUreference.fa
+sed -i '/^>/!s/\./X/g' D5_T2T_PKUreference.fa
+sed -i '/^>/!s/\./X/g' G2_CRIreference.fa
+sed -i '/^>/!s/\./X/g' K2_HAUreference.fa
+```
+
+Convery gff3 into bed file, in here, however, we kept the strand information `+` or `-` for later `bam2consensus` fasta extraction
+```
 module load bedops/2.4.40-dt3y73e
 
 gff2bed < C1_liftoff_polished | awk -F'\t' '{
@@ -161,27 +179,20 @@ gff2bed < D5_T2T_PKUreference_renamed.gff3 | awk -F'\t' '{
         print $1, $2, $3, name, ".", $6
     }
 }' OFS='\t' > ../05_genespace/strandbed/D5_T2T_PKUreference.bed
-
-for f in /lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/00_ref_GCF_0256985451/05_genespace/strandbed/*.bed; do cut -f1-4 "$f" > ../bed/$(basename "$f"); done
 ```
 
-Extract peptide sequences use gffread, but remove genes with introns largers than 200 `-i 200`, minimal length of transcript `-l 200` and merge extract transcripts `-M`; A side note, the `fa` peptide files can only contain partial of bed files. Fix the problematic site `.` to `X` in `gffread` output.
+Extracting gene names from peptide FASTA headers (lines starting with >), then filtering the strand BED so only genes present in the peptide set are kept.
 ```
-/lustre/hdd/LAS/jfw-lab/weixuan/00_BioinformaticTools/gffread/gffread D5_T2T_PKUreference_renamed.gff3 -i 200 -l 200  -M -g ../D5_T2T_PKUreference.fa -y ../05_genespace/peptide/D5_T2T_PKUreference.fa --keep-genes
-/lustre/hdd/LAS/jfw-lab/weixuan/00_BioinformaticTools/gffread/gffread C1_liftoff_polished -i 200 -l 200  -M -g ../C1_HAUreference.fasta -y ../05_genespace/peptide/C1_HAUreference.fa --keep-genes
-/lustre/hdd/LAS/jfw-lab/weixuan/00_BioinformaticTools/gffread/gffread G1_liftoff_polished -i 200 -l 200  -M -g ../G1_HAUreference.fasta -y ../05_genespace/peptide/G1_HAUreference.fa --keep-genes
-/lustre/hdd/LAS/jfw-lab/weixuan/00_BioinformaticTools/gffread/gffread G2_liftoff_polished -i 200 -l 200  -M -g ../G2_CRIreference.fasta -y ../05_genespace/peptide/G2_CRIreference.fa --keep-genes
-/lustre/hdd/LAS/jfw-lab/weixuan/00_BioinformaticTools/gffread/gffread K2_liftoff_polished -i 200 -l 200  -M -g ../K2_HAUreference.fasta -y ../05_genespace/peptide/K2_HAUreference.fa --keep-genes
+bed_dir="/lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/00_ref_GCF_0256985451/05_genespace/strandbed"
+peptide_dir="/lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/00_ref_GCF_0256985451/05_genespace/peptide"
+out_dir="/lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/00_ref_GCF_0256985451/05_genespace/bed"
 
-cd ../05_genespace/peptide
+for bed in "$bed_dir"/*.bed; do
+    fname=$(basename "$bed")
+    pep_fa="$peptide_dir/${fname%.bed}.fa"
 
-sed -i '/^>/!s/\./X/g' C1_HAUreference.fa
-sed -i '/^>/!s/\./X/g' G1_HAUreference.fa
-sed -i '/^>/!s/\./X/g' D5_T2T_PKUreference.fa
-sed -i '/^>/!s/\./X/g' G2_CRIreference.fa
-sed -i '/^>/!s/\./X/g' K2_HAUreference.fa
-
+    awk 'NR==FNR{g[$0]; next} $4 in g {print $1"\t"$2"\t"$3"\t"$4}' \
+      <(grep '>' "$pep_fa" | sed 's/>//') \
+      "$bed" > "$out_dir/$fname"
+done
 ```
-
-
-
