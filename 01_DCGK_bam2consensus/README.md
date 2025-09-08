@@ -193,9 +193,50 @@ micromamba activate /lustre/hdd/LAS/jfw-lab/weixuan/00_BioinformaticTools/envs/o
 Rscript genesapce.R
 ```
 
-#### 1.7 Run Genespace to find the single-copy orthologs
+### 2. Build gene trees using ortholog genes
+
+#### 2.1 Find orthology genes that all contain same gene ID (gene name after `liftoff`)
+
+```
+grep ">" /lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/00_ref_GCF_0256985451/05_genespace/orthofinder/Results_Sep07/Single_Copy_Orthologue_Sequences/*.fa | \
+uniq -c |  awk '$1==5 {print $2}' | cut -d ">" -f2 > /lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/04_bam2fasta/n7824.txt
+
+
+module load bambam/1.3
+
+# Define samples and grep patterns
+declare -A samples=(
+    ["C1_HAUreference_n7824"]="C1|C2"
+    ["G1_HAUreference_n7824"]="G1|G3"
+    ["G2_CRIreference_n7824"]="G2"
+    ["K2_HAUreference_n7824"]="K[0-9]"
+    ["D5_T2T_PKUreference_n7824"]="D5"
+)
+
+bamlist="/lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/04_bam2fasta/bamlist.txt"
+bed_dir="/lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/00_ref_GCF_0256985451/05_genespace/strandbed"
+outdir_base="/lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/04_bam2fasta"
+gene_list="/lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/04_bam2fasta/n7824.txt"
+
+# Process each sample
+for sample in "${!samples[@]}"; do
+    mkdir -p "$outdir_base/$sample"
+    
+    # Original BED file
+    bed_in="$bed_dir/${sample%%_n7824}.bed"
+    
+    # Filter BED using n7824.txt
+    bed_filtered="$outdir_base/$sample/${sample}.bed"
+    grep -Ff "$gene_list" "$bed_in" > "$bed_filtered"
+    
+    # Get BAMs for this sample
+    bams=$(grep -E "${samples[$sample]}" "$bamlist" | tr '\n' '\t')
+    
+    # Run bambam consensus
+    cd "$outdir_base/$sample"
+    bambam bam2consensus -g "$bed_filtered" $bams
+done
+
 
 ```
 
-grep ">" /lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/00_ref_GCF_0256985451/05_genespace/orthofinder/Results_Aug29/Single_Copy_Orthologue_Sequences/*.fa | \
-#uniq -c |  awk '$1==5 {print $2}' | cut -d ">" -f2 > /lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/04_bam2fasta/n19029.txt
