@@ -88,17 +88,13 @@ cd $Dir/04_liftoff_genespace/
 
 module load liftoff/1.6.3.2-py311-iefauxh
 
-#awk 'BEGIN{
-#  for(i=1;i<=13;i++){
-#    old=sprintf("GWHBISS%08d",i);
-#    new=sprintf("Ch%02d",i);
-#    map[old]=new
-#  }
-#}
-#{
-#  if($1 in map) $1=map[$1];
-#  print
-#}' OFS="\t" D5_T2T_PKUreference.gff3 > D5_T2T_PKUreference_renamed.gff3
+awk 'BEGIN{
+  for(i=1;i<=13;i++){
+    old=sprintf("GWHBISS%08d",i);
+    new=sprintf("Ch%02d",i);
+    map[old]=new}}
+{if($1 in map) $1=map[$1];
+  print}' OFS="\t" D5_T2T_PKUreference.gff3 > D5_T2T_PKUreference_renamed.gff3
 ```
 Liftoff annotations from CGK using D5 annotation file
 ```
