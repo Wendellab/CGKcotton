@@ -1,4 +1,4 @@
-#### 1.2
+#### 1.1 Scripts to show the divergence between reference genomes using mash/dotplot 
 ```
 #!/bin/bash
 #SBATCH --nodes=1
@@ -54,7 +54,10 @@ module load  samtools/1.19.2-py311-qlmoxzv
 for i in *.fasta
 do
 echo $i
-```
 bwa index $i
 samtools faidx $i
 done
+```
+
+#### 1.1 Scripts to show the divergence between reference genomes using mash/dotplot 
+```
