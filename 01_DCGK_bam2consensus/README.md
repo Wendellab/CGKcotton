@@ -1,4 +1,4 @@
-#### 1.1 Scripts to show the divergence between reference genomes using mash/dotplot 
+#### 1.1 Download D-CGK reference genomes from cottongene, remove the 'unplaced' contigs and rename and keep only the chromosome assmebly, and index each reference genome.
 ```
 #!/bin/bash
 #SBATCH --nodes=1
@@ -28,7 +28,9 @@ wget 'https://www.cottongen.org/cottongen_downloads/Gossypium_rotundifolium/HAU_
 wget "https://www.cottongen.org/cottongen_downloads/Gossypium_raimondii/PKU_G.raimondii_T2T/assembly/GWHBISS00000000.genome.fasta.gz"
 
 gunzip *.gz
-
+```
+change all assmbely names to `Chr01` to `Chr13`
+```
 seqkit mutate -w0 C1.genome.fa | grep -A1 '>Chr' | cut -d ' ' -f1 > C1_HAUreference.fasta
 seqkit mutate -w0 G1.genome.fa | grep -A1 '>Chr' | cut -d ' ' -f1 > G1_HAUreference.fasta
 
@@ -46,8 +48,9 @@ awk '/^>/ {
     printf(">Ch%02d\n",a[1])
     next
 } {print}' > D5_T2T_PKUreference.fa
-
-
+```
+Index reference genomes
+```
 module load bwa/0.7.17-zgotlbn
 module load  samtools/1.19.2-py311-qlmoxzv
 
@@ -59,5 +62,111 @@ samtools faidx $i
 done
 ```
 
-#### 1.1 Scripts to show the divergence between reference genomes using mash/dotplot 
+#### 1.2 Scripts to show the divergence between reference genomes using mash/dotplot  
 ```
+Ask Tony's help
+```
+
+#### 1.3 Download the annotation of D5 genome and rename the chromosome in GFF3 file to match with fasta file above  
+```
+#!/bin/bash
+#SBATCH --nodes=1
+#SBATCH --cpus-per-task=30
+#SBATCH --mem=200G 
+#SBATCH --time=1-00:00:00
+#SBATCH --mail-user=weixuan@iastate.edu
+#SBATCH --mail-type=ALL
+#SBATCH --open-mode=append
+#SBATCH --output="job.liftoff.%J.out"
+#SBATCH --job-name="liftoff"
+
+#https://github.com/agshumate/Liftoff
+
+Dir=/lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/00_ref_GCF_0256985451/
+
+cd $Dir/04_liftoff_genespace/
+
+module load liftoff/1.6.3.2-py311-iefauxh
+
+#awk 'BEGIN{
+#  for(i=1;i<=13;i++){
+#    old=sprintf("GWHBISS%08d",i);
+#    new=sprintf("Ch%02d",i);
+#    map[old]=new
+#  }
+#}
+#{
+#  if($1 in map) $1=map[$1];
+#  print
+#}' OFS="\t" D5_T2T_PKUreference.gff3 > D5_T2T_PKUreference_renamed.gff3
+```
+Liftoff annotations from CGK using D5 annotation file
+```
+liftoff $Dir/C1_HAUreference.fasta $Dir/D5_T2T_PKUreference.fa -g ./D5_T2T_PKUreference_renamed.gff3 -o C1_liftoff -p 30 -polish -exclude_partial
+liftoff $Dir/G1_HAUreference.fasta $Dir/D5_T2T_PKUreference.fa -g ./D5_T2T_PKUreference_renamed.gff3 -o G1_liftoff -p 30 -polish -exclude_partial
+liftoff $Dir/G2_CRIreference.fasta $Dir/D5_T2T_PKUreference.fa -g ./D5_T2T_PKUreference_renamed.gff3 -o G2_liftoff -p 30 -polish -exclude_partial
+liftoff $Dir/K2_HAUreference.fasta $Dir/D5_T2T_PKUreference.fa -g ./D5_T2T_PKUreference_renamed.gff3 -o K2_liftoff -p 30 -polish -exclude_partial
+```
+Convery gff3 into bed file, in here, however, we kept the strand information `+` or `-` for later `bam2consensus` fasta extraction
+```
+cd /lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/00_ref_GCF_0256985451/04_liftoff_genespace
+
+module load bedops/2.4.40-dt3y73e
+
+gff2bed < C1_liftoff_polished | awk -F'\t' '{
+    if($8=="mRNA"){
+        name=".";
+        n = split($10, a, ";")
+        for(i=1; i<=n; i++) if(a[i] ~ /^ID=/) { split(a[i], b, "="); name=b[2] }
+        print $1, $2, $3, name, ".", $6
+    }
+}' OFS='\t' > ../05_genespace/C1_HAUreference.bed
+
+gff2bed < G1_liftoff_polished | awk -F'\t' '{
+    if($8=="mRNA"){
+        name=".";
+        n = split($10, a, ";")
+        for(i=1; i<=n; i++) if(a[i] ~ /^ID=/) { split(a[i], b, "="); name=b[2] }
+        print $1, $2, $3, name, ".", $6
+    }
+}' OFS='\t' > ../05_genespace/G1_HAUreference.bed
+
+gff2bed < G2_liftoff_polished | awk -F'\t' '{
+    if($8=="mRNA"){
+        name=".";
+        n = split($10, a, ";")
+        for(i=1; i<=n; i++) if(a[i] ~ /^ID=/) { split(a[i], b, "="); name=b[2] }
+        print $1, $2, $3, name, ".", $6
+    }
+}' OFS='\t' > ../05_genespace/G2_CRIreference.bed
+
+gff2bed < K2_liftoff_polished | awk -F'\t' '{
+    if($8=="mRNA"){
+        name=".";
+        n = split($10, a, ";")
+        for(i=1; i<=n; i++) if(a[i] ~ /^ID=/) { split(a[i], b, "="); name=b[2] }
+        print $1, $2, $3, name, ".", $6
+    }
+}' OFS='\t' > ../05_genespace/K2_HAUreference.bed
+
+gff2bed < D5_T2T_PKUreference_renamed.gff3 | awk -F'\t' '{
+    if($8=="mRNA"){
+        name=".";
+        n = split($10, a, ";")
+        for(i=1; i<=n; i++) if(a[i] ~ /^ID=/) { split(a[i], b, "="); name=b[2] }
+        print $1, $2, $3, name, ".", $6
+    }
+}' OFS='\t' > ../05_genespace/D5_T2T_PKUreference.bed
+```
+
+```
+/lustre/hdd/LAS/jfw-lab/weixuan/00_BioinformaticTools/gffread/gffread D5_T2T_PKUreference_renamed.gff3 -i 200 -l 200  -M -g ../D5_T2T_PKUreference.fa -y ../05_genespace/peptide/D5_T2T_PKUreference.fa --keep-genes
+/lustre/hdd/LAS/jfw-lab/weixuan/00_BioinformaticTools/gffread/gffread C1_liftoff_polished -i 200 -l 200  -M -g ../C1_HAUreference.fasta -y ../05_genespace/peptide/C1_HAUreference.fa --keep-genes
+/lustre/hdd/LAS/jfw-lab/weixuan/00_BioinformaticTools/gffread/gffread G1_liftoff_polished -i 200 -l 200  -M -g ../G1_HAUreference.fasta -y ../05_genespace/peptide/G1_HAUreference.fa --keep-genes
+/lustre/hdd/LAS/jfw-lab/weixuan/00_BioinformaticTools/gffread/gffread G2_liftoff_polished -i 200 -l 200  -M -g ../G2_CRIreference.fasta -y ../05_genespace/peptide/G2_CRIreference.fa --keep-genes
+/lustre/hdd/LAS/jfw-lab/weixuan/00_BioinformaticTools/gffread/gffread K2_liftoff_polished -i 200 -l 200  -M -g ../K2_HAUreference.fasta -y ../05_genespace/peptide/K2_HAUreference.fa --keep-genes
+```
+
+
+mkdir bed
+mkdir peptide
