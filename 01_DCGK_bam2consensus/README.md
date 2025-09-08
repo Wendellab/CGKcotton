@@ -113,6 +113,7 @@ cd /lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/00_ref_GCF_0256985451/04_
 
 mkdir ../05_genespace/bed
 mkdir ../05_genespace/peptide
+mkdir ../05_genespace/strandbed
 
 module load bedops/2.4.40-dt3y73e
 
@@ -123,7 +124,7 @@ gff2bed < C1_liftoff_polished | awk -F'\t' '{
         for(i=1; i<=n; i++) if(a[i] ~ /^ID=/) { split(a[i], b, "="); name=b[2] }
         print $1, $2, $3, name, ".", $6
     }
-}' OFS='\t' > ../05_genespace/bed/C1_HAUreference.bed
+}' OFS='\t' > ../05_genespace/strandbed/C1_HAUreference.bed
 
 gff2bed < G1_liftoff_polished | awk -F'\t' '{
     if($8=="mRNA"){
@@ -132,7 +133,7 @@ gff2bed < G1_liftoff_polished | awk -F'\t' '{
         for(i=1; i<=n; i++) if(a[i] ~ /^ID=/) { split(a[i], b, "="); name=b[2] }
         print $1, $2, $3, name, ".", $6
     }
-}' OFS='\t' > ../05_genespace/bed/G1_HAUreference.bed
+}' OFS='\t' > ../05_genespace/strandbed/G1_HAUreference.bed
 
 gff2bed < G2_liftoff_polished | awk -F'\t' '{
     if($8=="mRNA"){
@@ -141,7 +142,7 @@ gff2bed < G2_liftoff_polished | awk -F'\t' '{
         for(i=1; i<=n; i++) if(a[i] ~ /^ID=/) { split(a[i], b, "="); name=b[2] }
         print $1, $2, $3, name, ".", $6
     }
-}' OFS='\t' > ../05_genespace/bed/G2_CRIreference.bed
+}' OFS='\t' > ../05_genespace/strandbed/G2_CRIreference.bed
 
 gff2bed < K2_liftoff_polished | awk -F'\t' '{
     if($8=="mRNA"){
@@ -150,7 +151,7 @@ gff2bed < K2_liftoff_polished | awk -F'\t' '{
         for(i=1; i<=n; i++) if(a[i] ~ /^ID=/) { split(a[i], b, "="); name=b[2] }
         print $1, $2, $3, name, ".", $6
     }
-}' OFS='\t' > ../05_genespace/bed/K2_HAUreference.bed
+}' OFS='\t' > ../05_genespace/strandbed/K2_HAUreference.bed
 
 gff2bed < D5_T2T_PKUreference_renamed.gff3 | awk -F'\t' '{
     if($8=="mRNA"){
@@ -159,10 +160,12 @@ gff2bed < D5_T2T_PKUreference_renamed.gff3 | awk -F'\t' '{
         for(i=1; i<=n; i++) if(a[i] ~ /^ID=/) { split(a[i], b, "="); name=b[2] }
         print $1, $2, $3, name, ".", $6
     }
-}' OFS='\t' > ../05_genespace/bed/D5_T2T_PKUreference.bed
+}' OFS='\t' > ../05_genespace/strandbed/D5_T2T_PKUreference.bed
+
+for f in /lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/00_ref_GCF_0256985451/05_genespace/strandbed/*.bed; do cut -f1-4 "$f" > ../bed/$(basename "$f"); done
 ```
 
-Extract peptide sequences use gffread, but remove genes with introns largers than 200 `-i 200`, minimal length of transcript `-l 200` and merge extract transcripts `-M`; A side note, the `fa` peptide files can only contain partial of bed files. 
+Extract peptide sequences use gffread, but remove genes with introns largers than 200 `-i 200`, minimal length of transcript `-l 200` and merge extract transcripts `-M`; A side note, the `fa` peptide files can only contain partial of bed files. Fix the problematic site `.` to `X` in `gffread` output.
 ```
 /lustre/hdd/LAS/jfw-lab/weixuan/00_BioinformaticTools/gffread/gffread D5_T2T_PKUreference_renamed.gff3 -i 200 -l 200  -M -g ../D5_T2T_PKUreference.fa -y ../05_genespace/peptide/D5_T2T_PKUreference.fa --keep-genes
 /lustre/hdd/LAS/jfw-lab/weixuan/00_BioinformaticTools/gffread/gffread C1_liftoff_polished -i 200 -l 200  -M -g ../C1_HAUreference.fasta -y ../05_genespace/peptide/C1_HAUreference.fa --keep-genes
@@ -170,7 +173,7 @@ Extract peptide sequences use gffread, but remove genes with introns largers tha
 /lustre/hdd/LAS/jfw-lab/weixuan/00_BioinformaticTools/gffread/gffread G2_liftoff_polished -i 200 -l 200  -M -g ../G2_CRIreference.fasta -y ../05_genespace/peptide/G2_CRIreference.fa --keep-genes
 /lustre/hdd/LAS/jfw-lab/weixuan/00_BioinformaticTools/gffread/gffread K2_liftoff_polished -i 200 -l 200  -M -g ../K2_HAUreference.fasta -y ../05_genespace/peptide/K2_HAUreference.fa --keep-genes
 
-cd
+cd ../05_genespace/peptide
 
 sed -i '/^>/!s/\./X/g' C1_HAUreference.fa
 sed -i '/^>/!s/\./X/g' G1_HAUreference.fa
