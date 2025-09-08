@@ -96,7 +96,7 @@ awk 'BEGIN{
 {if($1 in map) $1=map[$1];
   print}' OFS="\t" D5_T2T_PKUreference.gff3 > D5_T2T_PKUreference_renamed.gff3
 ```
-Liftoff annotations from CGK using D5 annotation file
+#### 1.4 Liftoff annotations from CGK using D5 annotation file
 ```
 liftoff $Dir/C1_HAUreference.fasta $Dir/D5_T2T_PKUreference.fa -g ./D5_T2T_PKUreference_renamed.gff3 -o C1_liftoff -p 30 -polish -exclude_partial
 liftoff $Dir/G1_HAUreference.fasta $Dir/D5_T2T_PKUreference.fa -g ./D5_T2T_PKUreference_renamed.gff3 -o G1_liftoff -p 30 -polish -exclude_partial
@@ -127,7 +127,7 @@ sed -i '/^>/!s/\./X/g' G2_CRIreference.fa
 sed -i '/^>/!s/\./X/g' K2_HAUreference.fa
 ```
 
-Convery gff3 into bed file, in here, however, we kept the strand information `+` or `-` for later `bam2consensus` fasta extraction
+#### 1.5 Convery gff3 into bed file, in here, however, we kept the strand information `+` or `-` for later `bam2consensus` fasta extraction
 ```
 module load bedops/2.4.40-dt3y73e
 
@@ -165,7 +165,7 @@ done
 
 ```
 
-Extracting gene names from peptide FASTA headers (lines starting with >), then filtering the strand BED so only genes present in the peptide set are kept.
+#### 1.6 Extracting gene names from peptide FASTA headers (lines starting with >), then filtering the strand BED so only genes present in the peptide set are kept.
 ```
 bed_dir="/lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/00_ref_GCF_0256985451/05_genespace/strandbed"
 peptide_dir="/lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/00_ref_GCF_0256985451/05_genespace/peptide"
@@ -180,3 +180,8 @@ for bed in "$bed_dir"/*.bed; do
       "$bed" > "$out_dir/$fname"
 done
 ```
+
+#### 1.7 Extracting gene names from peptide FASTA headers (lines starting with >), then filtering the strand BED so only genes present in the peptide set are kept.
+```
+grep ">" /lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/00_ref_GCF_0256985451/05_genespace/orthofinder/Results_Aug29/Single_Copy_Orthologue_Sequences/*.fa | \
+#uniq -c |  awk '$1==5 {print $2}' | cut -d ">" -f2 > /lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/04_bam2fasta/n19029.txt
