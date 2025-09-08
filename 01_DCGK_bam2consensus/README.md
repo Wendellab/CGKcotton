@@ -135,50 +135,38 @@ Convery gff3 into bed file, in here, however, we kept the strand information `+`
 ```
 module load bedops/2.4.40-dt3y73e
 
-gff2bed < C1_liftoff_polished | awk -F'\t' '{
-    if($8=="mRNA"){
-        name=".";
-        n = split($10, a, ";")
-        for(i=1; i<=n; i++) if(a[i] ~ /^ID=/) { split(a[i], b, "="); name=b[2] }
-        print $1, $2, $3, name, ".", $6
-    }
-}' OFS='\t' > ../05_genespace/strandbed/C1_HAUreference.bed
+# Input GFF3/GFF files
+inputs=(
+    C1_liftoff_polished
+    G1_liftoff_polished
+    G2_liftoff_polished
+    K2_liftoff_polished
+    D5_T2T_PKUreference_renamed.gff3
+)
 
-gff2bed < G1_liftoff_polished | awk -F'\t' '{
-    if($8=="mRNA"){
-        name=".";
-        n = split($10, a, ";")
-        for(i=1; i<=n; i++) if(a[i] ~ /^ID=/) { split(a[i], b, "="); name=b[2] }
-        print $1, $2, $3, name, ".", $6
-    }
-}' OFS='\t' > ../05_genespace/strandbed/G1_HAUreference.bed
+# Corresponding output BED names
+outputs=(
+    C1_HAUreference.bed
+    G1_HAUreference.bed
+    G2_CRIreference.bed
+    K2_HAUreference.bed
+    D5_T2T_PKUreference.bed
+)
 
-gff2bed < G2_liftoff_polished | awk -F'\t' '{
-    if($8=="mRNA"){
-        name=".";
-        n = split($10, a, ";")
-        for(i=1; i<=n; i++) if(a[i] ~ /^ID=/) { split(a[i], b, "="); name=b[2] }
-        print $1, $2, $3, name, ".", $6
-    }
-}' OFS='\t' > ../05_genespace/strandbed/G2_CRIreference.bed
+outdir="../05_genespace/strandbed"
+mkdir -p "$outdir"
 
-gff2bed < K2_liftoff_polished | awk -F'\t' '{
-    if($8=="mRNA"){
-        name=".";
-        n = split($10, a, ";")
-        for(i=1; i<=n; i++) if(a[i] ~ /^ID=/) { split(a[i], b, "="); name=b[2] }
-        print $1, $2, $3, name, ".", $6
-    }
-}' OFS='\t' > ../05_genespace/strandbed/K2_HAUreference.bed
+for i in "${!inputs[@]}"; do
+    gff2bed < "${inputs[i]}" | awk -F'\t' '{
+        if($8=="mRNA"){
+            name=".";
+            n = split($10,a,";")
+            for(i=1;i<=n;i++) if(a[i] ~ /^ID=/){ split(a[i],b,"="); name=b[2] }
+            print $1,$2,$3,name,".",$6
+        }
+    }' OFS='\t' > "$outdir/${outputs[i]}"
+done
 
-gff2bed < D5_T2T_PKUreference_renamed.gff3 | awk -F'\t' '{
-    if($8=="mRNA"){
-        name=".";
-        n = split($10, a, ";")
-        for(i=1; i<=n; i++) if(a[i] ~ /^ID=/) { split(a[i], b, "="); name=b[2] }
-        print $1, $2, $3, name, ".", $6
-    }
-}' OFS='\t' > ../05_genespace/strandbed/D5_T2T_PKUreference.bed
 ```
 
 Extracting gene names from peptide FASTA headers (lines starting with >), then filtering the strand BED so only genes present in the peptide set are kept.
