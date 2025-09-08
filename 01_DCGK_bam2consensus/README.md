@@ -1,3 +1,5 @@
+### 1. Find the single copy genes across CGK-D genomes
+
 #### 1.1 Download D-CGK reference genomes from cottongene, remove the 'unplaced' contigs and rename and keep only the chromosome assmebly, and index each reference genome.
 ```
 #!/bin/bash
@@ -181,7 +183,19 @@ for bed in "$bed_dir"/*.bed; do
 done
 ```
 
-#### 1.7 Extracting gene names from peptide FASTA headers (lines starting with >), then filtering the strand BED so only genes present in the peptide set are kept.
+#### 1.7 Run Genespace to find the single-copy orthologs
 ```
+module load r
+module load micromamba/1.4.2-7jjmfkf
+eval "$(micromamba shell hook --shell=bash)"
+micromamba activate /lustre/hdd/LAS/jfw-lab/weixuan/00_BioinformaticTools/envs/orthofinder_env
+
+Rscript genesapce.R
+```
+
+#### 1.7 Run Genespace to find the single-copy orthologs
+
+```
+
 grep ">" /lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/00_ref_GCF_0256985451/05_genespace/orthofinder/Results_Aug29/Single_Copy_Orthologue_Sequences/*.fa | \
 #uniq -c |  awk '$1==5 {print $2}' | cut -d ">" -f2 > /lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/04_bam2fasta/n19029.txt
