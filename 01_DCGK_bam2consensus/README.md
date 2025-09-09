@@ -114,11 +114,11 @@ mkdir ../05_genespace/bed
 mkdir ../05_genespace/peptide
 mkdir ../05_genespace/strandbed
 
-/lustre/hdd/LAS/jfw-lab/weixuan/00_BioinformaticTools/gffread/gffread D5_T2T_PKUreference_renamed.gff3 -i 200 -l 200  -M -g ../D5_T2T_PKUreference.fa -y ../05_genespace/peptide/D5_T2T_PKUreference.fa --keep-genes
-/lustre/hdd/LAS/jfw-lab/weixuan/00_BioinformaticTools/gffread/gffread C1_liftoff_polished -i 200 -l 200  -M -g ../C1_HAUreference.fasta -y ../05_genespace/peptide/C1_HAUreference.fa --keep-genes
-/lustre/hdd/LAS/jfw-lab/weixuan/00_BioinformaticTools/gffread/gffread G1_liftoff_polished -i 200 -l 200  -M -g ../G1_HAUreference.fasta -y ../05_genespace/peptide/G1_HAUreference.fa --keep-genes
-/lustre/hdd/LAS/jfw-lab/weixuan/00_BioinformaticTools/gffread/gffread G2_liftoff_polished -i 200 -l 200  -M -g ../G2_CRIreference.fasta -y ../05_genespace/peptide/G2_CRIreference.fa --keep-genes
-/lustre/hdd/LAS/jfw-lab/weixuan/00_BioinformaticTools/gffread/gffread K2_liftoff_polished -i 200 -l 200  -M -g ../K2_HAUreference.fasta -y ../05_genespace/peptide/K2_HAUreference.fa --keep-genes
+/lustre/hdd/LAS/jfw-lab/weixuan/00_BioinformaticTools/gffread/gffread D5_T2T_PKUreference_renamed.gff3  -M -g ../D5_T2T_PKUreference.fa -y ../05_genespace/peptide/D5_T2T_PKUreference.fa --keep-genes
+/lustre/hdd/LAS/jfw-lab/weixuan/00_BioinformaticTools/gffread/gffread C1_liftoff_polished -M -g ../C1_HAUreference.fasta -y ../05_genespace/peptide/C1_HAUreference.fa --keep-genes
+/lustre/hdd/LAS/jfw-lab/weixuan/00_BioinformaticTools/gffread/gffread G1_liftoff_polished  -M -g ../G1_HAUreference.fasta -y ../05_genespace/peptide/G1_HAUreference.fa --keep-genes
+/lustre/hdd/LAS/jfw-lab/weixuan/00_BioinformaticTools/gffread/gffread G2_liftoff_polished  -M -g ../G2_CRIreference.fasta -y ../05_genespace/peptide/G2_CRIreference.fa --keep-genes
+/lustre/hdd/LAS/jfw-lab/weixuan/00_BioinformaticTools/gffread/gffread K2_liftoff_polished -M -g ../K2_HAUreference.fasta -y ../05_genespace/peptide/K2_HAUreference.fa --keep-genes
 
 cd ../05_genespace/peptide
 
@@ -151,7 +151,7 @@ outputs=(
     D5_T2T_PKUreference.bed
 )
 
-outdir="../05_genespace/strandbed"
+outdir="../05_genespace/bed"
 mkdir -p "$outdir"
 
 for i in "${!inputs[@]}"; do
