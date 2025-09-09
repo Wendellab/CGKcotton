@@ -151,7 +151,7 @@ outputs=(
     D5_T2T_PKUreference.bed
 )
 
-outdir="../05_genespace/bed"
+outdir="../05_genespace/strandbed"
 mkdir -p "$outdir"
 
 for i in "${!inputs[@]}"; do
