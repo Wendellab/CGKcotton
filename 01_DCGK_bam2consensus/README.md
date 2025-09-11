@@ -238,7 +238,7 @@ for sample in "${!samples[@]}"; do
 done
 ```
 
-#### 2.2 Concatenate all orthologs from different differemt genome folders together; Reorientation sequence using strand information, then align each gene using `[mafft](https://mafft.cbrc.jp/alignment/server/index.html)`, and trim each alignment with flag `-gt 0.7` with `[trimal](https://vicfero.github.io/trimal/)`, and output the gene trees with `[IQTREE2](https://github.com/iqtree/iqtree2)`, and the statistical information of each trimmed alignment using `[ASMS.py](https://github.com/marekborowiec/AMAS)`
+#### 2.2 Concatenate all orthologs from different differemt genome folders together; Reorientation sequence using strand information, then align each gene using [mafft](https://mafft.cbrc.jp/alignment/server/index.html), and trim each alignment with flag `-gt 0.7` with [trimal](https://vicfero.github.io/trimal/), and output the gene trees with [IQTREE2](https://github.com/iqtree/iqtree2), and the statistical information of each trimmed alignment using [ASMS.py](https://github.com/marekborowiec/AMAS).
 
 ```
 #!/bin/bash
