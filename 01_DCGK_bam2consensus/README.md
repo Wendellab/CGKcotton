@@ -331,33 +331,61 @@ split -n "l/${SLURM_ARRAY_TASK_ID}/1000" $gene_file |
 
 ```
 
+#### 2.2 Collect all information from individual gene trees and build an Astral tree
 
+```
+cd /lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/04_bam2fasta/01_DCGK_n19029tree
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#for f in *.treefile; do
+for f in *.treefile; do
     # strip extension
-#    base=$(basename "$f" .treefile)
+    base=$(basename "$f" .treefile)
     # remove DCGK_ prefix and .t1 suffix
-#    name=${base#DCGK_}
-#    name=${name%.t1}
+    name=${base#DCGK_}
+    name=${name%.t1}
     # prepend to tree lines
-#    sed "s/^/tree ${name} = /" "$f"
-#done > ../n19028_all_trees.tre
+    sed "s/^/tree ${name} = /" "$f"
+done > /lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/04_bam2fasta/03_genetrees/n19028_all_trees.tre
+
+cd /lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/04_bam2fasta/02_DCGK_alnstat
+cat * | sort | uniq > /lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/04_bam2fasta/03_genetrees/n19028_all_trees_stat.txt
+
+
+## build an Astral tree with all 19,028 gene trees (one trimmed alignment had no variable sites), but we need to remove loci infor from tree files. 
+
+cd /lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/04_bam2fasta/03_genetrees/
+
+cut -d ' ' -f3 n19028_all_trees.tre > astral_input.tre
+module load openjdk/21.0.3_9-vngib7s
+java -Xmx200G -jar Astral/astral.5.7.8.jar -i astral_input.tre -o n19028_all_astral.tre 2>out.log
+
+
+## Filter out 8,828 loci based on their trimmed alignment quality below
+
+No_of_taxa == 41 				# No missing taxa
+Alignment_length >= 200			# trimmed alignment length 200 bp and above 
+Undetermined_characters <= 100	# the gaps '-' < 100 across all 200 x 41 sites
+Missing_percent <= 1			# the total '-' should be lesser than 1% of the total sites
+
+awk 'NR==1 || ($2 == 41 && $3 >= 200 && $5 <= 100 && $6 <= 1)' n19028_all_trees_stat.txt > n19028_all_trees_stat_filter.txt
+
+tail -n +2 n19028_all_trees_stat_filter.txt | cut -f1 -d '.' | sed 's/DCGK_//g' > n8828list.txt
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
