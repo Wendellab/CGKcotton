@@ -354,7 +354,7 @@ cat * | sort | uniq > /lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/04_bam
 
 cd /lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/04_bam2fasta/03_genetrees/
 
-cut -d ' ' -f3 n19028_all_trees.tre > astral_input.tre
+cut -d ' ' -f4 n19028_all_trees.tre > astral_input.tre
 module load openjdk/21.0.3_9-vngib7s
 java -Xmx200G -jar Astral/astral.5.7.8.jar -i astral_input.tre -o n19028_all_astral.tre 2>out.log
 
@@ -366,10 +366,11 @@ Alignment_length >= 200			# trimmed alignment length 200 bp and above
 Undetermined_characters <= 100	# the gaps '-' < 100 across all 200 x 41 sites
 Missing_percent <= 1			# the total '-' should be lesser than 1% of the total sites
 
-awk 'NR==1 || ($2 == 41 && $3 >= 200 && $5 <= 100 && $6 <= 1)' n19028_all_trees_stat.txt > n19028_all_trees_stat_filter.txt
+awk 'NR==1 || ($2 == 41 && $3 >= 200 && $5 <= 100 && $6 <= 1 && $7 >= 10 )' n19028_all_trees_stat.txt > n19028_all_trees_stat_filter.txt
 
-tail -n +2 n19028_all_trees_stat_filter.txt | cut -f1 -d '.' | sed 's/DCGK_//g' > n8828list.txt
+tail -n +2 n19028_all_trees_stat_filter.txt | cut -f1 -d '.' | sed 's/DCGK_//g' > n8807list.txt
 
+grep -Ff n8807list.txt n19028_all_trees.tre | cut -f4 -d " " > n8807_filter_trees.tre
 
 ```
 
