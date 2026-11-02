@@ -22,5 +22,5 @@ __pycache__/
 *.ckp
 *.log
 *.done
-pipelines/snaq/Manifest.toml
-pipelines/snaq/Project.toml
+06_TopologyWeightingAndNetworks/SNaQ/Manifest.toml
+06_TopologyWeightingAndNetworks/SNaQ/Project.toml
