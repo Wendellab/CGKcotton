@@ -29,14 +29,13 @@ gzip $sampledata*.fastq
 #SBATCH --cpus-per-task=30 
 #SBATCH --mem=200G 
 #SBATCH --time=2-00:30:00
-#SBATCH --mail-user=weixuan@iastate.edu
 #SBATCH --mail-type=ALL
 #SBATCH --output=joblog/job.trim.%A_%a.out 
 #SBATCH --job-name="trim"
 #SBATCH --array=22-41
 
-DIR=/lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/00_rawreads
-tDir=/lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/01_trimedreads
+DIR=/path/to/CGK_PROJECT/00_rawreads
+tDir=/path/to/CGK_PROJECT/01_trimedreads
 thr=30
 
 file1=$(sed -n ${SLURM_ARRAY_TASK_ID}p filename2.txt | cut -f1)
@@ -51,7 +50,7 @@ echo "new name is" $newname
 #trim reads with Trimmomatic:
 module load  trimmomatic/0.39-zwxnnrx
 cd $TMPDIR/
-trimmomatic PE -threads $thr $file1 $file2 $TMPDIR/$newname.R1.fq.gz $TMPDIR/$newname.U1.fq.gz $TMPDIR/$newname.R2.fq.gz $TMPDIR/$newname.U2.fq.gz ILLUMINACLIP:/lustre/hdd/LAS/jfw-lab/weixuan/03_Ggvcf/Adapters.fa:2:30:10:2:True LEADING:3 TRAILING:3 MINLEN:75
+trimmomatic PE -threads $thr $file1 $file2 $TMPDIR/$newname.R1.fq.gz $TMPDIR/$newname.U1.fq.gz $TMPDIR/$newname.R2.fq.gz $TMPDIR/$newname.U2.fq.gz ILLUMINACLIP:/path/to/USER_ROOT/03_Ggvcf/Adapters.fa:2:30:10:2:True LEADING:3 TRAILING:3 MINLEN:75
 
 mv $TMPDIR/$newname.R1.fq.gz $tDir
 mv $TMPDIR/$newname.R2.fq.gz $tDir
@@ -66,15 +65,14 @@ module purge
 #SBATCH --cpus-per-task=80 
 #SBATCH --mem=200G 
 #SBATCH --time=10:00:00
-#SBATCH --mail-user=weixuan@iastate.edu
 #SBATCH --mail-type=ALL
 #SBATCH --output=joblog/job.makePR.%A_%a.out 
 #SBATCH --job-name="getorganelle"
 #SBATCH --array=13
 
 module load getorganelle/1.7.7.0-py310-u45ybv3
-DIR=/lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/01_trimedreads
-outputDIR=/lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/02_getorg
+DIR=/path/to/CGK_PROJECT/01_trimedreads
+outputDIR=/path/to/CGK_PROJECT/02_getorg
 
 file1=$(sed -n ${SLURM_ARRAY_TASK_ID}p samplelist.txt)
 file2=$(sed -n ${SLURM_ARRAY_TASK_ID}p samplelist.txt | sed 's/R1[.]fq/R2\.fq/')
@@ -88,7 +86,7 @@ thr=80
 get_organelle_from_reads.py -t $thr -1 $file1 -2 $file2 -o $outputDIR/01_plastome_output/$name -k 21,45,65,85,109,115 -R 10 -F embplant_pt --overwrite
 
 # Add reference plastome, change kmer length and increace round of assmbely to improve samples without complete plastome assmbeled.
-# get_organelle_from_reads.py -t $thr -s /lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/02_getorg/change_all_aln_selected_fix.fasta -1 $file1 -2 $file2 -o $outputDIR/01_plastome_output/$name -k 21,45,65,85,109,115 -R 20 --max-reads 536870910 -F embplant_pt --overwrite
+# get_organelle_from_reads.py -t $thr -s /path/to/CGK_PROJECT/02_getorg/change_all_aln_selected_fix.fasta -1 $file1 -2 $file2 -o $outputDIR/01_plastome_output/$name -k 21,45,65,85,109,115 -R 20 --max-reads 536870910 -F embplant_pt --overwrite
 ```
 
 #### 1.4 Map to consensus to get plastome using K1 as reference for K6, K9, etc plastome extractios.
@@ -98,7 +96,6 @@ get_organelle_from_reads.py -t $thr -1 $file1 -2 $file2 -o $outputDIR/01_plastom
 #SBATCH --cpus-per-task=80 
 #SBATCH --mem=200G 
 #SBATCH --time=10:30:00
-#SBATCH --mail-user=weixuan@iastate.edu
 #SBATCH --mail-type=ALL
 #SBATCH --output=joblog/job.cultivar.%A_%a.out 
 #SBATCH --job-name="makeVCF"
@@ -106,9 +103,9 @@ get_organelle_from_reads.py -t $thr -1 $file1 -2 $file2 -o $outputDIR/01_plastom
 
 thr=80
 ref=embplant_pt.K85.complete.graph1.1.path_sequence.fasta
-readdir=/lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/01_trimedreads
+readdir=/path/to/CGK_PROJECT/01_trimedreads
 
-#cp /lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/02_getorg/01_plastome_output/K1_SRR3560141_set1/K1_SRR3560141_set1/embplant_pt.K85.complete.graph1.1.path_sequence.fasta ./
+#cp /path/to/CGK_PROJECT/02_getorg/01_plastome_output/SAMPLE_001/SAMPLE_001/embplant_pt.K85.complete.graph1.1.path_sequence.fasta ./
 #sed -i 's/^>.*/>K1/' $ref
 
 file1=$(sed -n ${SLURM_ARRAY_TASK_ID}p samplelist.txt)
@@ -121,12 +118,12 @@ module load vcftools bcftools
 #bwa index embplant_pt.K85.complete.graph1.1.path_sequence.fasta 
 bwa mem -M -R "@RG\tID:$name\tSM:$name\tPL:ILLUMINA" -t 80 embplant_pt.K85.complete.graph1.1.path_sequence.fasta $file1 $file2 > $name.sam
 
-export SENTIEON_LICENSE=reimu.las.iastate.edu:8990
+# Configure Sentieon licensing privately in the execution environment.
 module load sentieon-genomics
 sentieon util sort -o $name.sort.bam -t $thr --sam2bam -i $name.sam
 
 #scoring with sentieon-genomics:
-export SENTIEON_LICENSE=reimu.las.iastate.edu:8990
+# Configure Sentieon licensing privately in the execution environment.
 module load sentieon-genomics
 sentieon util sort -o $name.sort.bam -t $thr --sam2bam -i $name.sam
 

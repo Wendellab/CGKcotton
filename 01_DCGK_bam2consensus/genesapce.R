@@ -1,9 +1,9 @@
-library(GENESPACE, lib.loc = "/lustre/hdd/LAS/jfw-lab/weixuan/00_BioinformaticTools/rpackage")
+library(GENESPACE, lib.loc = "/path/to/USER_ROOT/00_BioinformaticTools/rpackage")
 
 # Initialize
 gpar <- init_genespace(
-  wd = "/lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/00_ref_GCF_0256985451/05_genespace", 
-  path2mcscanx = "/lustre/hdd/LAS/jfw-lab/weixuan/00_BioinformaticTools/MCScanX")
+  wd = "/path/to/CGK_PROJECT/00_ref_GCF_0256985451/05_genespace", 
+  path2mcscanx = "/path/to/USER_ROOT/00_BioinformaticTools/MCScanX")
 
 gpar$params$nCores <- 40
 

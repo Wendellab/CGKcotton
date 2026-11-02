@@ -7,7 +7,6 @@
 #SBATCH --cpus-per-task=10
 #SBATCH --mem=100G 
 #SBATCH --time=10:00:00
-#SBATCH --mail-user=weixuan@iastate.edu
 #SBATCH --mail-type=ALL
 #SBATCH --open-mode=append
 #SBATCH --output="job.refCGK.%J.out"
@@ -76,7 +75,6 @@ Ask Tony's help
 #SBATCH --cpus-per-task=30
 #SBATCH --mem=200G 
 #SBATCH --time=1-00:00:00
-#SBATCH --mail-user=weixuan@iastate.edu
 #SBATCH --mail-type=ALL
 #SBATCH --open-mode=append
 #SBATCH --output="job.liftoff.%J.out"
@@ -84,7 +82,7 @@ Ask Tony's help
 
 #https://github.com/agshumate/Liftoff
 
-Dir=/lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/00_ref_GCF_0256985451/
+Dir=/path/to/CGK_PROJECT/00_ref_GCF_0256985451/
 
 cd $Dir/04_liftoff_genespace/
 
@@ -108,17 +106,17 @@ liftoff $Dir/K2_HAUreference.fasta $Dir/D5_T2T_PKUreference.fa -g ./D5_T2T_PKUre
 
 Extract peptide sequences use gffread, but remove genes with introns largers than 200 `-i 200`, minimal length of transcript `-l 200` and merge extract transcripts `-M`; A side note, the `fa` peptide files can only contain partial of bed files. Fix the problematic site `.` to `X` in `gffread` output.
 ```
-cd /lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/00_ref_GCF_0256985451/04_liftoff_genespace
+cd /path/to/CGK_PROJECT/00_ref_GCF_0256985451/04_liftoff_genespace
 
 mkdir ../05_genespace/bed
 mkdir ../05_genespace/peptide
 mkdir ../05_genespace/strandbed
 
-/lustre/hdd/LAS/jfw-lab/weixuan/00_BioinformaticTools/gffread/gffread D5_T2T_PKUreference_renamed.gff3  -M -g ../D5_T2T_PKUreference.fa -y ../05_genespace/peptide/D5_T2T_PKUreference.fa --keep-genes
-/lustre/hdd/LAS/jfw-lab/weixuan/00_BioinformaticTools/gffread/gffread C1_liftoff_polished -M -g ../C1_HAUreference.fasta -y ../05_genespace/peptide/C1_HAUreference.fa --keep-genes
-/lustre/hdd/LAS/jfw-lab/weixuan/00_BioinformaticTools/gffread/gffread G1_liftoff_polished  -M -g ../G1_HAUreference.fasta -y ../05_genespace/peptide/G1_HAUreference.fa --keep-genes
-/lustre/hdd/LAS/jfw-lab/weixuan/00_BioinformaticTools/gffread/gffread G2_liftoff_polished  -M -g ../G2_CRIreference.fasta -y ../05_genespace/peptide/G2_CRIreference.fa --keep-genes
-/lustre/hdd/LAS/jfw-lab/weixuan/00_BioinformaticTools/gffread/gffread K2_liftoff_polished -M -g ../K2_HAUreference.fasta -y ../05_genespace/peptide/K2_HAUreference.fa --keep-genes
+/path/to/USER_ROOT/00_BioinformaticTools/gffread/gffread D5_T2T_PKUreference_renamed.gff3  -M -g ../D5_T2T_PKUreference.fa -y ../05_genespace/peptide/D5_T2T_PKUreference.fa --keep-genes
+/path/to/USER_ROOT/00_BioinformaticTools/gffread/gffread C1_liftoff_polished -M -g ../C1_HAUreference.fasta -y ../05_genespace/peptide/C1_HAUreference.fa --keep-genes
+/path/to/USER_ROOT/00_BioinformaticTools/gffread/gffread G1_liftoff_polished  -M -g ../G1_HAUreference.fasta -y ../05_genespace/peptide/G1_HAUreference.fa --keep-genes
+/path/to/USER_ROOT/00_BioinformaticTools/gffread/gffread G2_liftoff_polished  -M -g ../G2_CRIreference.fasta -y ../05_genespace/peptide/G2_CRIreference.fa --keep-genes
+/path/to/USER_ROOT/00_BioinformaticTools/gffread/gffread K2_liftoff_polished -M -g ../K2_HAUreference.fasta -y ../05_genespace/peptide/K2_HAUreference.fa --keep-genes
 
 cd ../05_genespace/peptide
 
@@ -169,9 +167,9 @@ done
 
 #### 1.6 Extracting gene names from peptide FASTA headers (lines starting with >), then filtering the strand BED so only genes present in the peptide set are kept.
 ```
-bed_dir="/lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/00_ref_GCF_0256985451/05_genespace/strandbed"
-peptide_dir="/lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/00_ref_GCF_0256985451/05_genespace/peptide"
-out_dir="/lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/00_ref_GCF_0256985451/05_genespace/bed"
+bed_dir="/path/to/CGK_PROJECT/00_ref_GCF_0256985451/05_genespace/strandbed"
+peptide_dir="/path/to/CGK_PROJECT/00_ref_GCF_0256985451/05_genespace/peptide"
+out_dir="/path/to/CGK_PROJECT/00_ref_GCF_0256985451/05_genespace/bed"
 
 for bed in "$bed_dir"/*.bed; do
     fname=$(basename "$bed")
@@ -188,7 +186,7 @@ done
 module load r
 module load micromamba/1.4.2-7jjmfkf
 eval "$(micromamba shell hook --shell=bash)"
-micromamba activate /lustre/hdd/LAS/jfw-lab/weixuan/00_BioinformaticTools/envs/orthofinder_env
+micromamba activate /path/to/USER_ROOT/00_BioinformaticTools/envs/orthofinder_env
 
 Rscript genesapce.R
 ```
@@ -198,8 +196,8 @@ Rscript genesapce.R
 #### 2.1 Find orthology genes that all contain same gene ID (gene name after `liftoff`) and run `bam2consensus` use `bambamtools`
 
 ```
-grep ">" /lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/00_ref_GCF_0256985451/05_genespace/orthofinder/Results_Sep07/Single_Copy_Orthologue_Sequences/*.fa | \
-uniq -c |  awk '$1==5 {print $2}' | cut -d ">" -f2 > /lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/04_bam2fasta/n19029.txt
+grep ">" /path/to/CGK_PROJECT/00_ref_GCF_0256985451/05_genespace/orthofinder/Results_Sep07/Single_Copy_Orthologue_Sequences/*.fa | \
+uniq -c |  awk '$1==5 {print $2}' | cut -d ">" -f2 > /path/to/CGK_PROJECT/04_bam2fasta/n19029.txt
 
 
 module load bambam/1.3
@@ -213,10 +211,10 @@ declare -A samples=(
     ["D5_T2T_PKUreference_n19029"]="D5"
 )
 
-bamlist="/lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/04_bam2fasta/bamlist.txt"
-bed_dir="/lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/00_ref_GCF_0256985451/05_genespace/strandbed"
-outdir_base="/lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/04_bam2fasta"
-gene_list="/lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/04_bam2fasta/n19029.txt"
+bamlist="/path/to/CGK_PROJECT/04_bam2fasta/bamlist.txt"
+bed_dir="/path/to/CGK_PROJECT/00_ref_GCF_0256985451/05_genespace/strandbed"
+outdir_base="/path/to/CGK_PROJECT/04_bam2fasta"
+gene_list="/path/to/CGK_PROJECT/04_bam2fasta/n19029.txt"
 
 # Process each sample
 for sample in "${!samples[@]}"; do
@@ -245,13 +243,12 @@ done
 #SBATCH --cpus-per-task=80
 #SBATCH --mem=200G
 #SBATCH --time=24:00:00
-#SBATCH --mail-user=weixuan@iastate.edu
 #SBATCH --mail-type=ALL
 #SBATCH --output="joboutput/job.n19029.%A_%a.out"
 #SBATCH --error="joboutput/job.n19029.%A_%a.err"
 #SBATCH --array=1-1000%10
 
-ROOT=/lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq
+ROOT=/path/to/CGK_PROJECT
 # File with gene names
 gene_file=$ROOT/04_bam2fasta/n19029.txt
 
@@ -334,7 +331,7 @@ split -n "l/${SLURM_ARRAY_TASK_ID}/1000" $gene_file |
 #### 2.2 Collect all information from individual gene trees and build an Astral tree
 
 ```
-cd /lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/04_bam2fasta/01_DCGK_n19029tree
+cd /path/to/CGK_PROJECT/04_bam2fasta/01_DCGK_n19029tree
 
 for f in *.treefile; do
     # strip extension
@@ -344,15 +341,15 @@ for f in *.treefile; do
     name=${name%.t1}
     # prepend to tree lines
     sed "s/^/tree ${name} = /" "$f"
-done > /lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/04_bam2fasta/03_genetrees/n19028_all_trees.tre
+done > /path/to/CGK_PROJECT/04_bam2fasta/03_genetrees/n19028_all_trees.tre
 
-cd /lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/04_bam2fasta/02_DCGK_alnstat
-cat * | sort | uniq > /lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/04_bam2fasta/03_genetrees/n19028_all_trees_stat.txt
+cd /path/to/CGK_PROJECT/04_bam2fasta/02_DCGK_alnstat
+cat * | sort | uniq > /path/to/CGK_PROJECT/04_bam2fasta/03_genetrees/n19028_all_trees_stat.txt
 
 
 ## build an Astral tree with all 19,028 gene trees (one trimmed alignment had no variable sites), but we need to remove loci infor from tree files. 
 
-cd /lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/04_bam2fasta/03_genetrees/
+cd /path/to/CGK_PROJECT/04_bam2fasta/03_genetrees/
 
 cut -d ' ' -f4 n19028_all_trees.tre > astral_input.tre
 module load openjdk/21.0.3_9-vngib7s
@@ -385,13 +382,12 @@ java -Xmx200G -jar Astral/astral.5.7.8.jar -i n8807_filter_trees.tre -o n8807_al
 #SBATCH --cpus-per-task=10
 #SBATCH --mem=200G 
 #SBATCH --time=1-00:00:00
-#SBATCH --mail-user=weixuan@iastate.edu
 #SBATCH --mail-type=ALL
 #SBATCH --output="job.Astral.%J.out"
 #SBATCH --job-name="Astral"
 
 
-cd /lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/04_bam2fasta/01_DCGK_n19029tree
+cd /path/to/CGK_PROJECT/04_bam2fasta/01_DCGK_n19029tree
 
 for f in *.treefile; do
     # strip extension
@@ -401,10 +397,10 @@ for f in *.treefile; do
     name=${name%.t1}
     # prepend to tree lines
     sed "s/^/tree ${name} = /" "$f"
-done > /lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/04_bam2fasta/03_genetrees/n19028_all_trees.tre
+done > /path/to/CGK_PROJECT/04_bam2fasta/03_genetrees/n19028_all_trees.tre
 
-cd /lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/04_bam2fasta/02_DCGK_alnstat
-cat * | sort | uniq > /lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/04_bam2fasta/03_genetrees/n19028_all_trees_stat.txt
+cd /path/to/CGK_PROJECT/04_bam2fasta/02_DCGK_alnstat
+cat * | sort | uniq > /path/to/CGK_PROJECT/04_bam2fasta/03_genetrees/n19028_all_trees_stat.txt
 
 
 
@@ -420,13 +416,13 @@ module load micromamba/1.4.2-7jjmfkf
 eval "$(micromamba shell hook --shell=bash)"
 
 # Create environment with newick_utils
-#micromamba create --root-prefix /lustre/hdd/LAS/jfw-lab/weixuan/00_BioinformaticTools/ \
+#micromamba create --root-prefix /path/to/USER_ROOT/00_BioinformaticTools/ \
 #  -n newick_env \
 #  newick_utils \
 #  -c conda-forge -c bioconda
 
 # Activate it with absolute path
-micromamba activate /lustre/hdd/LAS/jfw-lab/weixuan/00_BioinformaticTools/envs/newick_env
+micromamba activate /path/to/USER_ROOT/00_BioinformaticTools/envs/newick_env
 
 nw_ed ./n18805_filter_trees.tre 'i & b<=30' o > n18805_filter_trees_bs03.tre
 
@@ -442,14 +438,14 @@ java -Xmx200G -jar ../old_03_genetrees/Astral/astral.5.7.8.jar -i n18805_filter_
 
 #########################################
 
-sed -f <(sed 's/$/d/' skipped_trees.txt) n18805list.txt | sed 's/$/D5_SRR847980/' >../D5_T2T_PKUreference_n19029/outgroup/genelist_n40_outgroup.txt
+sed -f <(sed 's/$/d/' skipped_trees.txt) n18805list.txt | sed 's/$/SAMPLE_002/' >../D5_T2T_PKUreference_n19029/outgroup/genelist_n40_outgroup.txt
 
 for f in *.fasta; do
     prefix=$(basename "$f" .fasta)
 	seqkit mutate -w0 "$f"| sed "s/^>/>${prefix}_/" >> outgroup/all_renamed.fasta
 done
 
-sed -i -e 's|\.t1_/lustre/hdd/LAS/jfw-lab/weixuan/10_Australian_Reseq/03_gvcfs_vcf/realignBam/||g' \
+sed -i -e 's|\.t1_/path/to/CGK_PROJECT/03_gvcfs_vcf/realignBam/||g' \
        -e 's|\.realign.bam||g'  all_renamed.fasta
 
 seqkit grep -f genelist_n40_outgroup.txt all_renamed.fasta -o extracted.fasta
